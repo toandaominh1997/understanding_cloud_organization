@@ -12,7 +12,7 @@ from sklearn.model_selection import train_test_split
 
 
 def split_dataset(config):
-    df = pd.read_csv(config['DATA_TRAIN'])
+    df = pd.read_csv(os.path.join(config['DATA_TRAIN']))
     df['ImageId'], df['ClassId'] = zip(*df['Image_Label'].str.split('_'))
     df = df.pivot(index='ImageId',columns='ClassId',values='EncodedPixels')
     df['defects'] = df.count(axis=1)
