@@ -17,7 +17,7 @@ VALID_DATASET:
  PY: datasets.dataset
  CLASS: SteelDataset
  ARGS:
-  root_dataset: ./data/train_images/
+  root_dir: ./data/train_images/
   phase: valid
 TRAIN_DATALOADER:
  PY: torch.utils.data
