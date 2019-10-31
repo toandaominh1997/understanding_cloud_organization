@@ -8,6 +8,7 @@ from utils import load_yaml, init_seed
 import importlib
 import torch
 import pandas as pd 
+from tqdm import tqdm
 from sklearn.model_selection import train_test_split
 
 
@@ -68,7 +69,7 @@ def main():
                         save_period = saved_period,
                         checkpoint_dir = checkpoint_dir,
                         resume_path=resume_path)
-    learning.train(train_dataloader, valid_dataloader)
+    learning.train(tqdm(train_dataloader), tqdm(valid_dataloader))
 
 if __name__ == "__main__":
     main()
