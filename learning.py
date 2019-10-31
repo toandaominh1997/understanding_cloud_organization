@@ -59,7 +59,7 @@ class Learning(object):
         current_loss_mean = 0.0
         for batch_idx, (batch_imgs, batch_labels) in enumerate(loader):
             batch_imgs, batch_labels = batch_imgs.to(self.device), batch_labels.to(self.device)
-            outputs = self.model(batch_imgs)['out']
+            outputs = self.model(batch_imgs)
             loss = self.criterion(outputs, batch_labels)
             loss.backward()
             if (batch_idx+1) % self.grad_accumulation == 0:
