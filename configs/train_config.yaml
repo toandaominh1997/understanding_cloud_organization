@@ -43,8 +43,8 @@ MODEL:
         num_class: 4
 
 CRITERION:
-    PY: models.losses
-    CLASS: StableBCELoss
+    PY: torch.nn
+    CLASS: BCEWithLogitsLoss
     ARGS:
 
 OPTIMIZER:
