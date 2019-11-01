@@ -4,72 +4,65 @@ DEVICE: [0, 1]
 DATA_TRAIN: ./data/train.csv
 NUM_WORKERS: 8
 
-
 # training
 TRAIN_DATASET:
- PY: datasets.dataset
- CLASS: SteelDataset
- ARGS:
-  root_dir: ./data/train_images/
-  phase: train
+    PY: datasets.dataset
+    CLASS: SteelDataset
+    ARGS:
+        root_dir: ./data/train_images/
+        phase: train
 
 VALID_DATASET:
- PY: datasets.dataset
- CLASS: SteelDataset
- ARGS:
-  root_dir: ./data/train_images/
-  phase: valid
+    PY: datasets.dataset
+    CLASS: SteelDataset
+    ARGS:
+        root_dir: ./data/train_images/
+        phase: valid
 TRAIN_DATALOADER:
- PY: torch.utils.data
- CLASS: DataLoader
- ARGS:
-  batch_size: 16
-  shuffle: True
-  num_workers: 8
-  pin_memory: True
+    PY: torch.utils.data
+    CLASS: DataLoader
+    ARGS:
+        batch_size: 16
+        shuffle: True
+        num_workers: 8
+        pin_memory: True
 
 VALID_DATALOADER:
- PY: torch.utils.data
- CLASS: DataLoader
- ARGS:
-  batch_size: 16
-  shuffle: True
-  num_workers: 8
-  pin_memory: True
-  
-MODEL:
- PY: models.model
- CLASS: Model
- ARGS:
-  num_class: 4
+    PY: torch.utils.data
+    CLASS: DataLoader
+    ARGS:
+        batch_size: 16
+        shuffle: True
+        num_workers: 8
+        pin_memory: True
 
+MODEL:
+    PY: models.model
+    CLASS: Model
+    ARGS:
+        num_class: 4
 
 CRITERION:
- PY: models.losses
- CLASS: ComboLoss
- ARGS:
-  weights:
-   bce: 1
-   dice: 1
-   focal: 1
+    PY: models.losses
+    CLASS: StableBCELoss
+    ARGS:
 
 OPTIMIZER:
- PY: torch.optim
- CLASS: Adam
- ARGS:
-  lr: 0.0001
-  weight_decay: 0.000005
+    PY: torch.optim
+    CLASS: Adam
+    ARGS:
+        lr: 0.0001
+        weight_decay: 0.000005
 
 SCHEDULER:
- PY: torch.optim.lr_scheduler
- CLASS: ReduceLROnPlateau
- ARGS:
-  mode: max
-  factor: 0.1
-  patience: 2
-  threshold: 0.0000001
-  min_lr: 0.0000001
-
+    PY: torch.optim.lr_scheduler
+    CLASS: ReduceLROnPlateau
+    ARGS:
+        mode: max
+        factor: 0.1
+        patience: 2
+        threshold: 0.0000001
+        min_lr: 0.0000001
 
 GRADIENT_ACCUMULATION_STEPS: 1
 GRADIENT_CLIPPING: 0.1
@@ -78,4 +71,4 @@ EARLY_STOPPING: 10
 VALIDATION_FREQUENCY: 5
 SAVED_PERIOD: 5
 CHECKPOINT_DIR: ./saved/
-RESUME_PATH: 
+RESUME_PATH:

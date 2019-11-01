@@ -23,7 +23,7 @@ def split_dataset(config):
 def getattribute(config, name_package, *args, **kwargs):
     module = importlib.import_module(config[name_package]['PY'])
     module_class = getattr(module, config[name_package]['CLASS'])
-    module_args = dict(config[name_package]['ARGS'])
+    module_args = dict(config[name_package]['ARGS']) if config[name_package]['ARGS'] is not None else dict()
     assert all([k not in module_args for k in kwargs]), 'Overwriting kwargs given in config file is not allowed'
     module_args.update(kwargs)
     package = module_class(*args, **module_args)
