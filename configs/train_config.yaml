@@ -33,7 +33,7 @@ VALID_DATALOADER:
     CLASS: DataLoader
     ARGS:
         batch_size: 4
-        shuffle: True
+        shuffle: False
         num_workers: 8
         pin_memory: True
 
