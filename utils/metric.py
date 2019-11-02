@@ -16,6 +16,7 @@ class AverageMetric(object):
     def reset(self):
         self.dice_scores = []
     def dice_metric(self, probability, truth):
+        probability = torch.sigmoid(probability)
         batch_size = len(truth)
         with torch.no_grad():
             probability = probability.view(batch_size, -1)
@@ -34,3 +35,4 @@ class AverageMetric(object):
             dice = torch.cat([dice_pos, dice_neg]) 
             dice = dice.mean().item()
         return dice
+    
