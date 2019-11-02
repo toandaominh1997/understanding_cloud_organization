@@ -44,9 +44,13 @@ MODEL:
         num_class: 4
 
 CRITERION:
-    PY: torch.nn
-    CLASS: BCEWithLogitsLoss
+    PY: models.losses
+    CLASS: ComboLoss
     ARGS:
+        weights:
+            bce: 1
+            dice: 1
+            focal: 1
 
 OPTIMIZER:
     PY: torch.optim
@@ -72,4 +76,4 @@ EARLY_STOPPING: 10
 VALIDATION_FREQUENCY: 5
 SAVED_PERIOD: 5
 CHECKPOINT_DIR: ./saved
-RESUME_PATH: 
+RESUME_PATH:
