@@ -1,6 +1,6 @@
 import torch.nn as nn
 import torch 
-def accuracy_dice_score(self, probability, truth):
+def accuracy_dice_score(probability, truth):
     probability = torch.sigmoid(probability)
     batch_size = len(truth)
     with torch.no_grad():
