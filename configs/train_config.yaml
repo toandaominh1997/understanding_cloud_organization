@@ -18,6 +18,7 @@ VALID_DATASET:
     ARGS:
         root_dir: ./data/train_images/
         phase: valid
+
 TRAIN_DATALOADER:
     PY: torch.utils.data
     CLASS: DataLoader
@@ -72,4 +73,3 @@ VALIDATION_FREQUENCY: 5
 SAVED_PERIOD: 5
 CHECKPOINT_DIR: ./saved
 RESUME_PATH: 
-

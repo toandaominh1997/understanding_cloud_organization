@@ -1,5 +1,6 @@
 import torch.nn as nn
 import torchvision
+import torch 
 
 class Model(nn.Module):
     def __init__(self, num_class=4):
