@@ -49,7 +49,7 @@ class SteelDataset(Dataset):
         super(SteelDataset, self).__init__()
         self.root_dir = root_dir
         self.df = df
-        self.transforms = get_transforms(phase, width = 400, height = 500)
+        self.transforms = get_transforms(phase, width = 896, height = 1344)
     
     def __read_file__(self, list_data):
         df = pd.read_csv(os.path.join(list_data))
