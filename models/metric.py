@@ -1,13 +1,13 @@
 import torch.nn as nn
 import torch 
-def accuracy_dice_score(probability, truth):
+def accuracy_dice_score(probability, truth, threshold=0.5):
     probability = torch.sigmoid(probability)
     batch_size = len(truth)
     with torch.no_grad():
         probability = probability.view(batch_size, -1)
         truth = truth.view(batch_size, -1)
         assert(probability.shape == truth.shape) 
-        p = (probability > self.threshold).float() 
+        p = (probability > threshold).float() 
         t = (truth > 0.5).float() 
         t_sum = t.sum(-1)
         p_sum = p.sum(-1)
