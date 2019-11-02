@@ -12,8 +12,8 @@ from tqdm import tqdm
 from sklearn.model_selection import train_test_split
 from models import accuracy_dice_score
 
-
 def split_dataset(config):
+    print(config['DATA_TRAIN'])
     df = pd.read_csv(os.path.join(config['DATA_TRAIN']))
     df['ImageId'], df['ClassId'] = zip(*df['Image_Label'].str.split('_'))
     df = df.pivot(index='ImageId',columns='ClassId',values='EncodedPixels')
@@ -76,4 +76,3 @@ def main():
 
 if __name__ == "__main__":
     main() 
-
