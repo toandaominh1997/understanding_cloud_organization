@@ -14,6 +14,7 @@ from models import accuracy_dice_score
 
 def split_dataset(file_name):
     df = pd.read_csv(os.path.join(file_name))
+    df['Image_Label'].apply(lambda x: x.split('_')[1]).value_counts()
     df['label'] = df['Image_Label'].apply(lambda x: x.split('_')[1])
     df['im_id'] = df['Image_Label'].apply(lambda x: x.split('_')[0])
     id_mask_count = df.loc[df['EncodedPixels'].isnull() == False, 'Image_Label'].apply(lambda x: x.split('_')[0]).value_counts().reset_index().rename(columns={'index': 'img_id', 'Image_Label': 'count'})
