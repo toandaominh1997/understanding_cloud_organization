@@ -76,24 +76,23 @@ def main():
     print("Loading checkpoint: {} ...".format(args.resume_path))
     checkpoint = torch.load(args.resume_path, map_location=lambda storage, loc: storage)
     model.load_state_dict(checkpoint['state_dict'])
-    model = model
+    model = model.cuda()
     encoded_pixels = []
     for idx, (data, _) in enumerate(tqdm(test_dataloader)):
-        data = data
+        data = data.cuda()
         outputs = model(data)
-        for probability in outputs:
-            probability = probability.cpu().detach().numpy()
-            print('prob: ', probability.shape)
-            if probability.shape != (4, 350, 525):
-                probability = cv2.resize(probability, (4, 350, 525), interpolation=cv2.INTER_LINEAR)
-            print('prob: ', probability.shape)
-            predict, num_predict = post_process(sigmoid(probability), class_params[image_id % 4][0], class_params[image_id % 4][1])
-            if num_predict == 0:
-                encoded_pixels.append('')
-            else:
-                r = mask2rle(predict)
-                encoded_pixels.append(r)
-            image_id += 1
+        for batch in outputs:
+            for probability in batch:
+                probability = probability.cpu().detach().numpy()
+                if probability.shape != (350, 525):
+                    probability = cv2.resize(probability, dsize=(525, 350), interpolation=cv2.INTER_LINEAR)
+                predict, num_predict = post_process(sigmoid(probability), class_params[image_id % 4][0], class_params[image_id % 4][1])
+                if num_predict == 0:
+                    encoded_pixels.append('')
+                else:
+                    r = mask2rle(predict)
+                    encoded_pixels.append(r)
+                image_id += 1
     sub = pd.read_csv('./data/sample_submission.csv')
     sub['EncodedPixels'] = encoded_pixels
     sub.to_csv('submission.csv', columns=['Image_Label', 'EncodedPixels'], index=False)
