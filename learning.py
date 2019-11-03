@@ -3,9 +3,7 @@ import os
 import pandas as pd 
 import time 
 from utils import AverageMetric
-from knockknock import slack_sender
-webhook_url = "https://hooks.slack.com/services/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"
-channel = "pytoan"
+from utils import Slacksender
 
 class Learning(object):
     def __init__(self,
@@ -46,17 +44,17 @@ class Learning(object):
         
         self.train_metrics = MetricTracker('loss')
         self.valid_metrics = MetricTracker('loss', *[m.__name__ for m in self.metric_ftns])
+        self.slack_sender = Slacksender()
 
-    @slack_sender(webhook_url = webhook_url, channel= channel)
     def train(self, train_dataloader, valid_dataloader):
         score = -1
-        message = {"STOPPED"}
+        self.slack_sender.start()
         for epoch in range(self.start_epoch, self.num_epoch+1):
             print("{} epoch: \t start training....".format(epoch))
             start = time.time()
             train_result  = self._train_epoch(train_dataloader)
             train_result.update({'time': time.time()-start})
-            
+            self.slack_sender.process(train_result)
             for key, value in train_result.items():
                 print('    {:15s}: {}'.format(str(key), value))
 
@@ -67,7 +65,7 @@ class Learning(object):
             start = time.time()
             valid_result = self._valid_epoch(valid_dataloader)
             valid_result.update({'time': time.time() - start})
-            
+            self.slack_sender.process(valid_result)
             for key, value in valid_result.items():
                 if 'score' in key:
                     score = value 
@@ -75,13 +73,11 @@ class Learning(object):
             
             self.post_processing(score, epoch)
             if epoch - self.best_epoch > self.early_stopping:
-                message = {"EARLY STOPPING"}
+                self.slack_sender.process('EARLY STOPPING')
                 print('EARLY STOPPING')
                 break
-        return message
+        self.slack_sender.end()
 
-    
-    @slack_sender(webhook_url = webhook_url, channel= channel)
     def _train_epoch(self, data_loader):
         self.model.train()
         self.optimizer.zero_grad()
@@ -98,7 +94,6 @@ class Learning(object):
                 self.optimizer.zero_grad()
         return self.train_metrics.result()
 
-    @slack_sender(webhook_url = webhook_url, channel= channel)
     def _valid_epoch(self, data_loader):
         metrics = AverageMetric()
         self.model.eval()
