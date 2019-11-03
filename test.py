@@ -83,6 +83,7 @@ def main():
         outputs = model(data)
         for probability in outputs:
             probability = probability.cpu().detach().numpy()
+            print('prob: ', probability.shape)
             if probability.shape != (350, 525):
                 probability = cv2.resize(probability, (525, 350), interpolation=cv2.INTER_LINEAR)
             predict, num_predict = post_process(sigmoid(probability), class_params[image_id % 4][0], class_params[image_id % 4][1])
