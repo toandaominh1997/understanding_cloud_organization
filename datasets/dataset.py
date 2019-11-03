@@ -105,4 +105,4 @@ class SteelDataset(Dataset):
         return img, mask
 
     def __len__(self):
-        return len(self.df)
+        return len(self.img_ids)
