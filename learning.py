@@ -113,9 +113,7 @@ class Learning(object):
             self.best_epoch = epoch 
             best = True
             print("best model: {} epoch - {:.5}".format(epoch, score))
-        if best==True or (self.save_period>=0 and epoch % self.save_period == 0):
-            self._save_checkpoint(epoch = epoch, save_best = best)
-        
+        self._save_checkpoint(epoch = epoch, save_best = best)
         if self.scheduler.__class__.__name__ == 'ReduceLROnPlateau':
             self.scheduler.step(score)
         else:
