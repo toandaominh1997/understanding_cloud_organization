@@ -1,20 +1,82 @@
-import torch.nn as nn
-import torchvision
-import torch 
-from modules import Unet
+import cv2 
+from datasets import SteelDataset
+from tqdm import tqdm
+from torch.utils.data import DataLoader
+import argparse 
+import time 
+from pathlib import Path
+from learning import Learning
+from utils import load_yaml, init_seed
+import importlib
+import torch
+import pandas as pd 
+from tqdm import tqdm
+
+sigmoid = lambda x: 1 / (1 + np.exp(-x))
+class_params = {0: (0.65, 10000), 1: (0.7, 10000), 2: (0.7, 10000), 3: (0.6, 10000)}
+def post_process(probability, threshold, min_size):
+    """
+    Post processing of each predicted mask, components with lesser number of pixels
+    than `min_size` are ignored
+    """
+    # don't remember where I saw it
+    mask = cv2.threshold(probability, threshold, 1, cv2.THRESH_BINARY)[1]
+    num_component, component = cv2.connectedComponents(mask.astype(np.uint8))
+    predictions = np.zeros((350, 525), np.float32)
+    num = 0
+    for c in range(1, num_component):
+        p = (component == c)
+        if p.sum() > min_size:
+            predictions[p] = 1
+            num += 1
+    return predictions, num
+
+def getattribute(config, name_package, *args, **kwargs):
+    module = importlib.import_module(config[name_package]['PY'])
+    module_class = getattr(module, config[name_package]['CLASS'])
+    module_args = dict(config[name_package]['ARGS']) if config[name_package]['ARGS'] is not None else dict()
+    assert all([k not in module_args for k in kwargs]), 'Overwriting kwargs given in config file is not allowed'
+    module_args.update(kwargs)
+    package = module_class(*args, **module_args)
+    return package
 
 
-class Model(nn.Module):
-    def __init__(self, num_class=4):
-        super(Model, self).__init__()
-        # self.models = torchvision.models.segmentation.deeplabv3_resnet50(pretrained=False, progress=True, num_classes=num_class, aux_loss=None)
-        self.models = Unet('efficientnet-b1', classes=3, activation='softmax')
-    
-    def forward(self, inputs):
-        out = self.models(inputs)
-        return out
+def read_data(file_name):
+    df = pd.read_csv(os.path.join(file_name))
+    df['ImageId'], df['ClassId'] = zip(*df['Image_Label'].str.split('_'))
+    df = df.pivot(index='ImageId',columns='ClassId',values='EncodedPixels')
+    df['defects'] = df.count(axis=1)
+    return df 
+def main():
+    parser = argparse.ArgumentParser(description='Semantic Segmentation')
+    parser.add_argument('--train_cfg', type=str, default='./configs/train_config.yaml', help='train config path')
+    args = parser.parse_args()
+    config_folder = Path(args.train_cfg.strip("/"))
+    config = load_yaml(config_folder)
+    init_seed(config['SEED'])
+    test_df = read_data('./data/sample_submission.csv')
+    test_dataset = getattribute(config = config, name_package = 'TEST_DATASET', df = test_df)
+    test_dataloader = getattribute(config = config, name_package = 'TEST_DATALOADER', dataset = valid_dataset)
+    model = getattribute(config = config, name_package = 'MODEL')
+    model = model.cuda()
 
+    for idx, (data, target) in enumerate(test_dataloader):
+        data = data.cuda()
+        outputs = model(data)
+        for i, probability in outputs:
+            probability = probability.cpu().detach().numpy()
+            if probability.shape != (350, 525):
+                probability = cv2.resize(probability, dsize=(525, 350), interpolation=cv2.INTER_LINEAR)
+            predict, num_predict = post_process(sigmoid(probability), class_params[image_id % 4][0], class_params[image_id % 4][1])
+            if num_predict == 0:
+                encoded_pixels.append('')
+            else:
+                r = mask2rle(predict)
+                encoded_pixels.append(r)
+            image_id += 1
+    sub = pd.read_csv('./data/sample_submission.csv')
+    sub['EncodedPixels'] = encoded_pixels
+    sub.to_csv('submission.csv', columns=['Image_Label', 'EncodedPixels'], index=False)
 if __name__=='__main__':
-    model = Model(num_class=4)
-    inputs = torch.randn(1, 3, 800, 1600)
-    print(model(inputs).size())
+    main()
+

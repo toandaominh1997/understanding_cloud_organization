@@ -22,6 +22,14 @@ VALID_DATASET:
         phase: valid
         encoder_name: efficientnet-b1
         pretrained: imagenet
+TEST_DATASET:
+    PY: datasets.dataset
+    CLASS: SteelDataset
+    ARGS:
+        root_dir: ./data/test_images/
+        phase: valid
+        encoder_name: efficientnet-b1
+        pretrained: imagenet
 
 TRAIN_DATALOADER:
     PY: torch.utils.data
@@ -39,6 +47,14 @@ VALID_DATALOADER:
         batch_size: 22
         shuffle: False
         num_workers: 16
+        pin_memory: True
+TEST_DATALOADER:
+    PY: torch.utils.data
+    CLASS: DataLoader
+    ARGS:
+        batch_size: 4
+        shuffle: False
+        num_workers: 8
         pin_memory: True
 
 MODEL:
