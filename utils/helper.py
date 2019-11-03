@@ -20,7 +20,7 @@ def init_seed(SEED=42):
     torch.backends.cudnn.deterministic = True
 
 class Slacksender(object):
-    def __init__(self, webhook_url = 'https://hooks.slack.com/services/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', channel = 'pytoan'):
+    def __init__(self, webhook_url = 'https://hooks.slack.com/services/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', channel = 'pytoan'):
         self.webhook_url = webhook_url
         self.channel = channel 
         self.dump = {
