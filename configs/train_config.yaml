@@ -11,7 +11,7 @@ TRAIN_DATASET:
     ARGS:
         root_dir: ./data/train_images/
         phase: train
-        encoder_name: se_resnext50_32x4d
+        encoder_name: efficientnet-b2
         pretrained: imagenet
 
 VALID_DATASET:
@@ -20,7 +20,7 @@ VALID_DATASET:
     ARGS:
         root_dir: ./data/train_images/
         phase: valid
-        encoder_name: se_resnext50_32x4d
+        encoder_name: efficientnet-b2
         pretrained: imagenet
 TEST_DATASET:
     PY: datasets.dataset
@@ -28,7 +28,7 @@ TEST_DATASET:
     ARGS:
         root_dir: ./data/test_images/
         phase: valid
-        encoder_name: se_resnext50_32x4d
+        encoder_name: efficientnet-b2
         pretrained: imagenet
 
 TRAIN_DATALOADER:
@@ -60,7 +60,7 @@ MODEL:
     PY: modules
     CLASS: FPN
     ARGS:
-        encoder_name: se_resnext50_32x4d
+        encoder_name: efficientnet-b2
         encoder_weights: imagenet
         classes: 4
         activation: softmax
@@ -91,7 +91,7 @@ GRADIENT_ACCUMULATION_STEPS: 1
 GRADIENT_CLIPPING: 0.1
 NUM_EPOCH: 50
 EARLY_STOPPING: 21
-VALIDATION_FREQUENCY: 5
+VALIDATION_FREQUENCY: 2
 SAVED_PERIOD: 5
-CHECKPOINT_DIR: ./saved/FPN/se_resnext50_32x4d/
+CHECKPOINT_DIR: ./saved/FPN/efficientnet-b2/
 RESUME_PATH:
