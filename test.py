@@ -81,7 +81,7 @@ def main():
     for idx, (data, _) in enumerate(tqdm(test_dataloader)):
         data = data
         outputs = model(data)
-        for i, probability in outputs:
+        for probability in outputs:
             probability = probability.cpu().detach().numpy()
             if probability.shape != (350, 525):
                 probability = cv2.resize(probability, dsize=(525, 350), interpolation=cv2.INTER_LINEAR)
