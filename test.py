@@ -78,7 +78,7 @@ def main():
     model.load_state_dict(checkpoint['state_dict'])
     model = model.cuda()
     encoded_pixels = []
-    for idx, (data, _) in enumerate(test_dataloader):
+    for idx, (data, _) in enumerate(tqdm(test_dataloader)):
         data = data.cuda()
         outputs = model(data)
         for i, probability in outputs:
