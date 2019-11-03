@@ -35,7 +35,7 @@ TRAIN_DATALOADER:
     PY: torch.utils.data
     CLASS: DataLoader
     ARGS:
-        batch_size: 20
+        batch_size: 24
         shuffle: True
         num_workers: 12
         pin_memory: True
@@ -44,7 +44,7 @@ VALID_DATALOADER:
     PY: torch.utils.data
     CLASS: DataLoader
     ARGS:
-        batch_size: 20
+        batch_size: 24
         shuffle: False
         num_workers: 12
         pin_memory: True
