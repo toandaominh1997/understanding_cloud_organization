@@ -7,11 +7,11 @@ from modules import Unet
 class Model(nn.Module):
     def __init__(self, num_class=4):
         super(Model, self).__init__()
-        # self.models = torchvision.models.segmentation.deeplabv3_resnet50(pretrained=False, progress=True, num_classes=num_class, aux_loss=None)
-        self.models = Unet('efficientnet-b1', classes=num_class, activation='softmax')
+        self.models = torchvision.models.segmentation.deeplabv3_resnet50(pretrained=False, progress=True, num_classes=num_class, aux_loss=None)
+        # self.models = Unet('efficientnet-b1', classes=num_class, activation='softmax')
     
     def forward(self, inputs):
-        out = self.models(inputs)
+        out = self.models(inputs)['out']
         return out
 
 # if __name__=='__main__':

@@ -57,13 +57,10 @@ TEST_DATALOADER:
         num_workers: 8
 
 MODEL:
-    PY: modules
-    CLASS: Unet
+    PY: models.model
+    CLASS: Model
     ARGS:
-        encoder_name: se_resnext50_32x4d
-        encoder_weights: imagenet
-        classes: 4
-        activation: softmax
+        num_class: 4
 
 
 CRITERION:
