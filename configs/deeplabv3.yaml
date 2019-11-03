@@ -58,7 +58,7 @@ TEST_DATALOADER:
 
 MODEL:
     PY: modules
-    CLASS: FPN
+    CLASS: Unet
     ARGS:
         encoder_name: se_resnext50_32x4d
         encoder_weights: imagenet
@@ -90,8 +90,8 @@ SCHEDULER:
 GRADIENT_ACCUMULATION_STEPS: 1
 GRADIENT_CLIPPING: 0.1
 NUM_EPOCH: 50
-EARLY_STOPPING: 21
+EARLY_STOPPING: 16
 VALIDATION_FREQUENCY: 5
 SAVED_PERIOD: 5
-CHECKPOINT_DIR: ./saved/FPN/se_resnext50_32x4d/
+CHECKPOINT_DIR: ./saved/deeplabv3/
 RESUME_PATH:
