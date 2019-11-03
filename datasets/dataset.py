@@ -22,23 +22,15 @@ def get_transforms(phase, width=1600, height=256):
     if phase == "train":
         list_transforms.extend(
             [
-                albu.HorizontalFlip(),
-                albu.OneOf([
-                    albu.RandomContrast(),
-                    albu.RandomGamma(),
-                    albu.RandomBrightness(),
-                    ], p=0.3),
-                albu.OneOf([
-                    albu.ElasticTransform(alpha=120, sigma=120 * 0.05, alpha_affine=120 * 0.03),
-                    albu.GridDistortion(),
-                    albu.OpticalDistortion(distort_limit=2, shift_limit=0.5),
-                    ], p=0.3),
-                albu.ShiftScaleRotate(),
+                albu.HorizontalFlip(p=0.5),
+                albu.ShiftScaleRotate(scale_limit=0.5, rotate_limit=0, shift_limit=0.1, p=0.5, border_mode=0),
+                albu.GridDistortion(p=0.5),
+                albu.OpticalDistortion(p=0.5, distort_limit=2, shift_limit=0.5),    
             ]
         )
     list_transforms.extend(
         [
-            albu.Resize(width,height,always_apply=True),
+            albu.Resize(width, height),
             # albu.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225), p=1),
             # ToTensor(),
         ]
@@ -46,36 +38,46 @@ def get_transforms(phase, width=1600, height=256):
     list_trfms = albu.Compose(list_transforms)
     return list_trfms
 class SteelDataset(Dataset):
-    def __init__(self, root_dir, df, phase, encoder_name, pretrained):
+    def __init__(self, root_dir, df, img_ids,  phase, encoder_name, pretrained):
         super(SteelDataset, self).__init__()
         self.root_dir = root_dir
         self.df = df
+        self.img_ids = img_ids
         self.transforms = get_transforms(phase, width = 320, height = 640)
         self.preprocessing = self.get_preprocessing(get_preprocessing_fn(encoder_name, pretrained))
 
     
-    def __read_file__(self, list_data):
-        df = pd.read_csv(os.path.join(list_data))
-        df['ImageId'], df['ClassId'] = zip(*df['Image_Label'].str.split('_'))
-        df['ClassId'] = df['ClassId']
-        df = df.pivot(index='ImageId',columns='ClassId',values='EncodedPixels')
-        df['defects'] = df.count(axis=1)
-        return df
-    def make_mask(self, row_id, df):
-        fname = df.iloc[row_id].name
-        labels = df.iloc[row_id][:4]
-        masks = np.zeros((1400, 2100, 4), dtype=np.float32)
+    @staticmethod
+    def rle_decode(mask_rle: str = '', shape: tuple = (1400, 2100)):
+        '''
+        Decode rle encoded mask.
 
-        for idx, label in enumerate(labels.values):
+        :param mask_rle: run-length as string formatted (start length)
+        :param shape: (height, width) of array to return 
+        Returns numpy array, 1 - mask, 0 - background
+        '''
+        s = mask_rle.split()
+        starts, lengths = [np.asarray(x, dtype=int) for x in (s[0:][::2], s[1:][::2])]
+        starts -= 1
+        ends = starts + lengths
+        img = np.zeros(shape[0] * shape[1], dtype=np.uint8)
+        for lo, hi in zip(starts, ends):
+            img[lo:hi] = 1
+        return img.reshape(shape, order='F')
+    def make_mask(self, df: pd.DataFrame, image_name: str='img.jpg', shape: tuple = (1400, 2100)):
+        """
+        Create mask based on df, image name and shape.
+        """
+        encoded_masks = df.loc[df['im_id'] == image_name, 'EncodedPixels']
+        masks = np.zeros((shape[0], shape[1], 4), dtype=np.float32)
+
+        for idx, label in enumerate(encoded_masks.values):
             if label is not np.nan:
-                label = label.split(" ")
-                positions = map(int, label[0::2])
-                length = map(int, label[1::2])
-                mask = np.zeros(1400 * 2100, dtype=np.uint8)
-                for pos, le in zip(positions, length):
-                    mask[pos:(pos + le)] = 1
-                masks[:, :, idx] = mask.reshape(1400, 2100, order='F')
-        return fname, masks
+                mask = self.rle_decode(label)
+                masks[:, :, idx] = mask
+                
+        return masks
+    
     @staticmethod
     def to_tensor(x, **kwargs):
         """
@@ -88,13 +90,15 @@ class SteelDataset(Dataset):
             albu.Lambda(image=self.to_tensor, mask=self.to_tensor),
             ]
         return albu.Compose(_transform)
-    def __getitem__(self, index):
-        image_id, mask = self.make_mask(index, self.df)
-        image_path = os.path.join(self.root_dir, image_id)
+    def __getitem__(self, idx):
+        image_name = self.img_ids[idx]
+        mask = self.make_mask(self.df, image_name)
+        image_path = os.path.join(self.root_dir, image_name)
         img = cv2.imread(image_path)
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         augmented = self.transforms(image=img, mask=mask)
         img = augmented['image']
-        mask = augmented['mask'] 
+        mask = augmented['mask']
         preprocessed = self.preprocessing(image=img, mask=mask)
         img = preprocessed['image']
         mask = preprocessed['mask']
@@ -102,4 +106,3 @@ class SteelDataset(Dataset):
 
     def __len__(self):
         return len(self.df)
-        return 30

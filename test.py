@@ -57,10 +57,10 @@ def getattribute(config, name_package, *args, **kwargs):
 
 def read_data(file_name):
     df = pd.read_csv(os.path.join(file_name))
-    df['ImageId'], df['ClassId'] = zip(*df['Image_Label'].str.split('_'))
-    df = df.pivot(index='ImageId',columns='ClassId',values='EncodedPixels')
-    df['defects'] = df.count(axis=1)
-    return df 
+    df['label'] = df['Image_Label'].apply(lambda x: x.split('_')[1])
+    df['im_id'] = df['Image_Label'].apply(lambda x: x.split('_')[0])
+    test_ids = df['Image_Label'].apply(lambda x: x.split('_')[0]).drop_duplicates().values
+    return df, test_ids
 def main():
     parser = argparse.ArgumentParser(description='Semantic Segmentation')
     parser.add_argument('--train_cfg', type=str, default='./configs/train_config.yaml', help='train config path')
@@ -69,8 +69,8 @@ def main():
     config_folder = Path(args.train_cfg.strip("/"))
     config = load_yaml(config_folder)
     init_seed(config['SEED'])
-    test_df = read_data('./data/sample_submission.csv')
-    test_dataset = getattribute(config = config, name_package = 'TEST_DATASET', df = test_df)
+    sub, test_ids = read_data('./data/sample_submission.csv')
+    test_dataset = getattribute(config = config, name_package = 'TEST_DATASET', df = sub, img_ids = test_ids)
     test_dataloader = getattribute(config = config, name_package = 'TEST_DATALOADER', dataset = test_dataset)
     model = getattribute(config = config, name_package = 'MODEL')
     print("Loading checkpoint: {} ...".format(args.resume_path))
@@ -94,7 +94,7 @@ def main():
                     r = mask2rle(predict)
                     encoded_pixels.append(r)
                 image_id += 1
-    sub = pd.read_csv('./data/sample_submission.csv')
+    
     sub['EncodedPixels'] = encoded_pixels
     sub.to_csv('submission.csv', columns=['Image_Label', 'EncodedPixels'], index=False)
 if __name__=='__main__':

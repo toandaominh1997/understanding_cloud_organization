@@ -14,11 +14,11 @@ from models import accuracy_dice_score
 
 def split_dataset(file_name):
     df = pd.read_csv(os.path.join(file_name))
-    df['ImageId'], df['ClassId'] = zip(*df['Image_Label'].str.split('_'))
-    df = df.pivot(index='ImageId',columns='ClassId',values='EncodedPixels')
-    df['defects'] = df.count(axis=1)
-    train_df, valid_df = train_test_split(df, test_size=0.1, random_state=42)
-    return train_df, valid_df
+    df['label'] = df['Image_Label'].apply(lambda x: x.split('_')[1])
+    df['im_id'] = df['Image_Label'].apply(lambda x: x.split('_')[0])
+    id_mask_count = train.loc[train['EncodedPixels'].isnull() == False, 'Image_Label'].apply(lambda x: x.split('_')[0]).value_counts().reset_index().rename(columns={'index': 'img_id', 'Image_Label': 'count'})
+    train_ids, valid_ids = train_test_split(id_mask_count['img_id'].values, random_state=42, stratify=id_mask_count['count'], test_size=0.1)
+    return df, train_ids, valid_ids
 
 def getattribute(config, name_package, *args, **kwargs):
     module = importlib.import_module(config[name_package]['PY'])
@@ -37,9 +37,9 @@ def main():
     config = load_yaml(config_folder)
     init_seed(config['SEED'])
     
-    train_df, valid_df = split_dataset(config['DATA_TRAIN'])
-    train_dataset = getattribute(config = config, name_package = 'TRAIN_DATASET', df = train_df)
-    valid_dataset = getattribute(config = config, name_package = 'VALID_DATASET', df = valid_df)
+    df, train_ids, valid_ids = split_dataset(config['DATA_TRAIN'])
+    train_dataset = getattribute(config = config, name_package = 'TRAIN_DATASET', df = df, img_ids = train_ids)
+    valid_dataset = getattribute(config = config, name_package = 'VALID_DATASET', df = df, img_ids = valid_ids)
     train_dataloader = getattribute(config = config, name_package = 'TRAIN_DATALOADER', dataset = train_dataset)
     valid_dataloader = getattribute(config = config, name_package = 'VALID_DATALOADER', dataset = valid_dataset)
     model = getattribute(config = config, name_package = 'MODEL')
