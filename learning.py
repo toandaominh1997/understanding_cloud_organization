@@ -3,6 +3,10 @@ import os
 import pandas as pd 
 import time 
 from utils import AverageMetric
+from knockknock import slack_sender
+webhook_url = "https://hooks.slack.com/services/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"
+channel = "pytoan"
+
 class Learning(object):
     def __init__(self,
             model,
@@ -42,9 +46,10 @@ class Learning(object):
         self.train_metrics = MetricTracker('loss')
         self.valid_metrics = MetricTracker('loss', *[m.__name__ for m in self.metric_ftns])
 
-        
+    @slack_sender(webhook_url = webhook_url, channel= channel)
     def train(self, train_dataloader, valid_dataloader):
         score = -1
+        message = {"STOPPED"}
         for epoch in range(self.start_epoch, self.num_epoch+1):
             print("{} epoch: \t start training....".format(epoch))
             start = time.time()
@@ -69,10 +74,13 @@ class Learning(object):
             
             self.post_processing(score, epoch)
             if epoch - self.best_epoch > self.early_stopping:
+                message = {"EARLY STOPPING"}
                 print('EARLY STOPPING')
                 break
+        return message
 
-
+    
+    @slack_sender(webhook_url = webhook_url, channel= channel)
     def _train_epoch(self, data_loader):
         self.model.train()
         self.optimizer.zero_grad()
@@ -89,6 +97,7 @@ class Learning(object):
                 self.optimizer.zero_grad()
         return self.train_metrics.result()
 
+    @slack_sender(webhook_url = webhook_url, channel= channel)
     def _valid_epoch(self, data_loader):
         metrics = AverageMetric()
         self.model.eval()
