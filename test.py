@@ -1,4 +1,7 @@
+import os 
 import cv2 
+import numpy as np 
+import pandas as pd 
 from datasets import SteelDataset
 from tqdm import tqdm
 from torch.utils.data import DataLoader
@@ -14,6 +17,17 @@ from tqdm import tqdm
 
 sigmoid = lambda x: 1 / (1 + np.exp(-x))
 class_params = {0: (0.65, 10000), 1: (0.7, 10000), 2: (0.7, 10000), 3: (0.6, 10000)}
+def mask2rle(img):
+    '''
+    Convert mask to rle.
+    img: numpy array, 1 - mask, 0 - background
+    Returns run length as string formated
+    '''
+    pixels= img.T.flatten()
+    pixels = np.concatenate([[0], pixels, [0]])
+    runs = np.where(pixels[1:] != pixels[:-1])[0] + 1
+    runs[1::2] -= runs[::2]
+    return ' '.join(str(x) for x in runs)
 def post_process(probability, threshold, min_size):
     """
     Post processing of each predicted mask, components with lesser number of pixels
@@ -50,17 +64,21 @@ def read_data(file_name):
 def main():
     parser = argparse.ArgumentParser(description='Semantic Segmentation')
     parser.add_argument('--train_cfg', type=str, default='./configs/train_config.yaml', help='train config path')
+    parser.add_argument('--resume_path', type=str, default='./saved/', help='resume path')
     args = parser.parse_args()
     config_folder = Path(args.train_cfg.strip("/"))
     config = load_yaml(config_folder)
     init_seed(config['SEED'])
     test_df = read_data('./data/sample_submission.csv')
     test_dataset = getattribute(config = config, name_package = 'TEST_DATASET', df = test_df)
-    test_dataloader = getattribute(config = config, name_package = 'TEST_DATALOADER', dataset = valid_dataset)
+    test_dataloader = getattribute(config = config, name_package = 'TEST_DATALOADER', dataset = test_dataset)
     model = getattribute(config = config, name_package = 'MODEL')
+    print("Loading checkpoint: {} ...".format(args.resume_path))
+    checkpoint = torch.load(args.resume_path, map_location=lambda storage, loc: storage)
+    model.load_state_dict(checkpoint['state_dict'])
     model = model.cuda()
-
-    for idx, (data, target) in enumerate(test_dataloader):
+    encoded_pixels = []
+    for idx, (data, _) in enumerate(test_dataloader):
         data = data.cuda()
         outputs = model(data)
         for i, probability in outputs:
