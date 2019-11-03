@@ -25,6 +25,8 @@ class Learning(object):
             resume_path):
         self.device, device_ids = self._prepare_device(device)
         self.model = model.to(self.device)
+        if resume_path is not None:
+            self._resume_checkpoint(resume_path)
         if len(device_ids) > 1:
             self.model = torch.nn.DataParallel(model, device_ids=device_ids)
         self.criterion = criterion
@@ -41,8 +43,7 @@ class Learning(object):
         self.start_epoch = 0
         self.best_epoch = 0
         self.best_score = 0
-        if resume_path is not None:
-            self._resume_checkpoint(resume_path)
+        
         self.train_metrics = MetricTracker('loss')
         self.valid_metrics = MetricTracker('loss', *[m.__name__ for m in self.metric_ftns])
 
