@@ -45,7 +45,7 @@ MODEL:
     PY: modules
     CLASS: Unet
     ARGS:
-        encoder_name: efficient-b1
+        encoder_name: efficientnet-b1
         encoder_weights: imagenet
         classes: 4
         activation: softmax
