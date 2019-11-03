@@ -78,6 +78,7 @@ def main():
     model.load_state_dict(checkpoint['state_dict'])
     model = model.cuda()
     encoded_pixels = []
+    image_id = 0
     for idx, (data, _) in enumerate(tqdm(test_dataloader)):
         data = data.cuda()
         outputs = model(data)
