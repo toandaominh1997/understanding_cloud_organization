@@ -11,7 +11,7 @@ TRAIN_DATASET:
     ARGS:
         root_dir: ./data/train_images/
         phase: train
-        encoder_name: efficientnet-b1
+        encoder_name: se_resnext50_32x4d
         pretrained: imagenet
 
 VALID_DATASET:
@@ -20,7 +20,7 @@ VALID_DATASET:
     ARGS:
         root_dir: ./data/train_images/
         phase: valid
-        encoder_name: efficientnet-b1
+        encoder_name: se_resnext50_32x4d
         pretrained: imagenet
 TEST_DATASET:
     PY: datasets.dataset
@@ -28,25 +28,25 @@ TEST_DATASET:
     ARGS:
         root_dir: ./data/test_images/
         phase: valid
-        encoder_name: efficientnet-b1
+        encoder_name: se_resnext50_32x4d
         pretrained: imagenet
 
 TRAIN_DATALOADER:
     PY: torch.utils.data
     CLASS: DataLoader
     ARGS:
-        batch_size: 22
+        batch_size: 16
         shuffle: True
-        num_workers: 16
+        num_workers: 12
         pin_memory: True
 
 VALID_DATALOADER:
     PY: torch.utils.data
     CLASS: DataLoader
     ARGS:
-        batch_size: 22
+        batch_size: 16
         shuffle: False
-        num_workers: 16
+        num_workers: 12
         pin_memory: True
 TEST_DATALOADER:
     PY: torch.utils.data
@@ -60,7 +60,7 @@ MODEL:
     PY: modules
     CLASS: Unet
     ARGS:
-        encoder_name: efficientnet-b1
+        encoder_name: se_resnext50_32x4d
         encoder_weights: imagenet
         classes: 4
         activation: softmax
