@@ -76,10 +76,10 @@ def main():
     print("Loading checkpoint: {} ...".format(args.resume_path))
     checkpoint = torch.load(args.resume_path, map_location=lambda storage, loc: storage)
     model.load_state_dict(checkpoint['state_dict'])
-    model = model.cuda()
+    model = model
     encoded_pixels = []
     for idx, (data, _) in enumerate(tqdm(test_dataloader)):
-        data = data.cuda()
+        data = data
         outputs = model(data)
         for i, probability in outputs:
             probability = probability.cpu().detach().numpy()
