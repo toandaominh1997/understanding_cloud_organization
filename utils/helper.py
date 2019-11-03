@@ -2,6 +2,8 @@ import yaml
 import numpy as np
 import torch
 import os
+import request
+
 
 def load_yaml(file_name):
     with open(file_name, 'r') as stream:
@@ -14,3 +16,10 @@ def init_seed(SEED=42):
     torch.manual_seed(SEED)
     torch.cuda.manual_seed(SEED)
     torch.backends.cudnn.deterministic = True
+
+def slack_sender(wehook, channel):
+    dump = {
+        "username": "toandaominh1997",
+        "channel": channel, 
+        "icon_emoji": ":clapper:",
+    }
