@@ -35,7 +35,7 @@ TRAIN_DATALOADER:
     PY: torch.utils.data
     CLASS: DataLoader
     ARGS:
-        batch_size: 16
+        batch_size: 20
         shuffle: True
         num_workers: 12
         pin_memory: True
@@ -44,7 +44,7 @@ VALID_DATALOADER:
     PY: torch.utils.data
     CLASS: DataLoader
     ARGS:
-        batch_size: 16
+        batch_size: 20
         shuffle: False
         num_workers: 12
         pin_memory: True
@@ -90,8 +90,8 @@ SCHEDULER:
 GRADIENT_ACCUMULATION_STEPS: 1
 GRADIENT_CLIPPING: 0.1
 NUM_EPOCH: 50
-EARLY_STOPPING: 10
+EARLY_STOPPING: 16
 VALIDATION_FREQUENCY: 5
 SAVED_PERIOD: 5
-CHECKPOINT_DIR: ./saved
+CHECKPOINT_DIR: ./saved/FPN/se_resnext50_32x4d/
 RESUME_PATH:

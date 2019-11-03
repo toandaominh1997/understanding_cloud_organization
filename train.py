@@ -17,7 +17,7 @@ def split_dataset(file_name):
     df['ImageId'], df['ClassId'] = zip(*df['Image_Label'].str.split('_'))
     df = df.pivot(index='ImageId',columns='ClassId',values='EncodedPixels')
     df['defects'] = df.count(axis=1)
-    train_df, valid_df = train_test_split(df, test_size=0.2, random_state=42)
+    train_df, valid_df = train_test_split(df, test_size=0.1, random_state=42)
     return train_df, valid_df
 
 def getattribute(config, name_package, *args, **kwargs):
