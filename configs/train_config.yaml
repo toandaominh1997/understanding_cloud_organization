@@ -93,5 +93,5 @@ NUM_EPOCH: 50
 EARLY_STOPPING: 21
 VALIDATION_FREQUENCY: 2
 SAVED_PERIOD: 5
-CHECKPOINT_DIR: ./saved/FPN/efficientnet-b2/
-RESUME_PATH:
+CHECKPOINT_DIR: ./saved/efficientnet-b2/
+RESUME_PATH: ./saved/FPN/efficientnet-b2/FPN/checkpoint_epoch25.pth
