@@ -14,6 +14,7 @@ import random
 from torch.utils.data import DataLoader
 import torch.nn as nn
 from tqdm import tqdm_notebook as tqdm
+from modules.encoders import get_preprocessing_fn
 
 
 def get_transforms(phase, width=1600, height=256):
@@ -38,18 +39,20 @@ def get_transforms(phase, width=1600, height=256):
     list_transforms.extend(
         [
             albu.Resize(width,height,always_apply=True),
-            albu.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225), p=1),
-            ToTensor(),
+            # albu.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225), p=1),
+            # ToTensor(),
         ]
     )
     list_trfms = albu.Compose(list_transforms)
     return list_trfms
 class SteelDataset(Dataset):
-    def __init__(self, root_dir, df, phase):
+    def __init__(self, root_dir, df, phase, encoder_name, pretrained):
         super(SteelDataset, self).__init__()
         self.root_dir = root_dir
         self.df = df
-        self.transforms = get_transforms(phase, width = 448, height = 896)
+        self.transforms = get_transforms(phase, width = 320, height = 640)
+        self.preprocessing = self.get_preprocessing(get_preprocessing_fn(encoder_name, pretrained))
+
     
     def __read_file__(self, list_data):
         df = pd.read_csv(os.path.join(list_data))
@@ -70,17 +73,31 @@ class SteelDataset(Dataset):
                 length = map(int, label[1::2])
                 mask = np.zeros(1400 * 2100, dtype=np.uint8)
                 for pos, le in zip(positions, length):
-                    mask[pos:(pos + le)] = 255
+                    mask[pos:(pos + le)] = 1
                 masks[:, :, idx] = mask.reshape(1400, 2100, order='F')
         return fname, masks
+    @staticmethod
+    def to_tensor(x, **kwargs):
+        """
+        Convert image or mask.
+        """
+        return x.transpose(2, 0, 1).astype('float32')
+    def get_preprocessing(self, preprocessing_fn):
+        _transform = [
+            albu.Lambda(image=preprocessing_fn),
+            albu.Lambda(image=self.to_tensor, mask=self.to_tensor),
+            ]
+        return albu.Compose(_transform)
     def __getitem__(self, index):
         image_id, mask = self.make_mask(index, self.df)
         image_path = os.path.join(self.root_dir, image_id)
         img = cv2.imread(image_path)
         augmented = self.transforms(image=img, mask=mask)
         img = augmented['image']
-        mask = augmented['mask'] # 1x256x1600x4
-        mask = mask[0].permute(2, 0, 1) # 1x4x256x1600
+        mask = augmented['mask'] 
+        preprocessed = self.preprocessing(image=img, mask=mask)
+        img = preprocessed['image']
+        mask = preprocessed['mask']
         return img, mask
 
     def __len__(self):

@@ -11,6 +11,8 @@ TRAIN_DATASET:
     ARGS:
         root_dir: ./data/train_images/
         phase: train
+        encoder_name: efficientnet-b1
+        pretrained: imagenet
 
 VALID_DATASET:
     PY: datasets.dataset
@@ -18,6 +20,8 @@ VALID_DATASET:
     ARGS:
         root_dir: ./data/train_images/
         phase: valid
+        encoder_name: efficientnet-b1
+        pretrained: imagenet
 
 TRAIN_DATALOADER:
     PY: torch.utils.data
@@ -38,15 +42,21 @@ VALID_DATALOADER:
         pin_memory: True
 
 MODEL:
-    PY: models.model
-    CLASS: Model
+    PY: modules
+    CLASS: Unet
     ARGS:
-        num_class: 4
+        encoder_name: efficient-b1
+        encoder_weights: imagenet
+        classes: 4
+        activation: softmax
+
 
 CRITERION:
-    PY: torch.nn
-    CLASS: BCEWithLogitsLoss
+    PY: modules.utils.losses
+    CLASS: BCEDiceLoss
     ARGS:
+        eps=1.0
+
 
 OPTIMIZER:
     PY: torch.optim
@@ -59,11 +69,8 @@ SCHEDULER:
     PY: torch.optim.lr_scheduler
     CLASS: ReduceLROnPlateau
     ARGS:
-        mode: max
-        factor: 0.1
+        factor: 0.15
         patience: 2
-        threshold: 0.0000001
-        min_lr: 0.0000001
 
 GRADIENT_ACCUMULATION_STEPS: 1
 GRADIENT_CLIPPING: 0.1
