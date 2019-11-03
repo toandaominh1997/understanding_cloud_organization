@@ -1,5 +1,5 @@
 SEED: 42
-DEVICE: [0]
+DEVICE: [0, 1]
 # DATASET
 DATA_TRAIN: ./data/train.csv
 NUM_WORKERS: 8
