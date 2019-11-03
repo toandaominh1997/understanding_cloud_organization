@@ -55,7 +55,6 @@ TEST_DATALOADER:
         batch_size: 4
         shuffle: False
         num_workers: 8
-        pin_memory: True
 
 MODEL:
     PY: modules
