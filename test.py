@@ -76,16 +76,17 @@ def main():
     print("Loading checkpoint: {} ...".format(args.resume_path))
     checkpoint = torch.load(args.resume_path, map_location=lambda storage, loc: storage)
     model.load_state_dict(checkpoint['state_dict'])
-    model = model
+    model = model.cuda()
     encoded_pixels = []
     for idx, (data, _) in enumerate(tqdm(test_dataloader)):
-        data = data
+        data = data.cuda()
         outputs = model(data)
         for probability in outputs:
             probability = probability.cpu().detach().numpy()
             print('prob: ', probability.shape)
             if probability.shape != (350, 525):
-                probability = cv2.resize(probability, (525, 350), interpolation=cv2.INTER_LINEAR)
+                probability = cv2.resize(probability, (4, 350, 525), interpolation=cv2.INTER_LINEAR)
+            print('prob: ', probability.shape)
             predict, num_predict = post_process(sigmoid(probability), class_params[image_id % 4][0], class_params[image_id % 4][1])
             if num_predict == 0:
                 encoded_pixels.append('')
